@@ -65,6 +65,10 @@ install(DIRECTORY "${WEBRTC_SOURCE_DIR}/third_party/libyuv"
         DESTINATION "include/webrtc/third_party"
         FILES_MATCHING PATTERN "*.h")
 
+install(DIRECTORY "${WEBRTC_SOURCE_DIR}/third_party/abseil-cpp/absl"
+        DESTINATION "include/webrtc/third_party"
+        FILES_MATCHING PATTERN "*.h")
+
 # Install pdb files
 if (CMAKE_BUILD_TYPE MATCHES Debug)
   file(GLOB_RECURSE PDB_FILES [${WEBRTC_OUTPUT_DIR} "*.pdb")
