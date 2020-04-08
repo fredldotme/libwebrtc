@@ -1,3 +1,9 @@
+### Fork Notes
+Since aisouard's original repository is unmaintained, plenty of forks have popped up in order to handle the building of later libwebrtc releases. I couldn't find any that handled anything newer than release 'm74', so I've started another one. 
+
+You can find all the libwebrtc releases, along with the corresponding chromium version in which they shipped, here: https://chromiumdash.appspot.com/branches. E.g. as of this readme update, the latest stable version is [4044](https://webrtc.googlesource.com/src.git/+log/refs/branch-heads/4044) which shipped in Chromium 81.0.4044.96. 
+
+
 # libwebrtc [![License][license-img]][license-href] [![Join the chat at https://gitter.im/aisouard/libwebrtc][gitter-img]][gitter-href] [![Build Status][travis-img]][travis-href] [![Build Status][appveyor-img]][appveyor-href]
 
 This repository contains a collection of CMake scripts to help you embed
