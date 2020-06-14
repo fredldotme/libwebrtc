@@ -184,7 +184,7 @@ variable.
 
 ```
 $ cmake -DWEBRTC_REVISION=be22d51 ..
-$ cmake -DWEBRTC_BRANCH_HEAD=refs/branch-heads/72 ..
+$ cmake -DWEBRTC_BRANCH_HEAD=refs/branch-heads/4103 ..
 ```
 
 If both variables are set, it will focus on fetching the commit defined inside
@@ -299,8 +299,8 @@ Apache License 2.0 © [Axel Isouard][author]
 [license-href]:https://opensource.org/licenses/Apache-2.0
 [appveyor-img]:https://ci.appveyor.com/api/projects/status/yd1s303md3tt4w9a?svg=true
 [appveyor-href]:https://ci.appveyor.com/project/aisouard/libwebrtc
-[travis-img]:https://travis-ci.org/aisouard/libwebrtc.svg?branch=master
-[travis-href]:https://travis-ci.org/aisouard/libwebrtc
+[travis-img]:https://travis-ci.org/workshopx-app/libwebrtc-build.svg?branch=dev
+[travis-href]:https://travis-ci.org/workshopx/libwebrtc-build
 [gitter-img]:https://badges.gitter.im/aisouard/libwebrtc.svg
 [gitter-href]:https://gitter.im/aisouard/libwebrtc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [osx1011sdk]: https://github.com/phracker/MacOSX-SDKs/releases/download/MacOSX10.11.sdk/MacOSX10.11.sdk.tar.xz
