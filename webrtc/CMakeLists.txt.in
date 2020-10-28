@@ -112,14 +112,14 @@ set(_GN_COMMAND download_from_google_storage${_SCRIPT_SUFFIX} --no_resume --plat
     --no_auth --bucket chromium-gn
     -s src/buildtools/${_FOLDER}/gn${_SUFFIX}.sha1)
 
-libwebrtc_command(
-    NAME webrtc-gn
-    COMMAND ${_GN_COMMAND}
-    WORKING_DIRECTORY "${WEBRTC_PARENT_DIR}"
-    COMMENT "Fetching gn${_SUFFIX} for ${_PLATFORM}"
-    DEPENDS webrtc-sync
-)
-set(_DEPENDENCIES ${_DEPENDENCIES} webrtc-gn)
+#libwebrtc_command(
+    #NAME webrtc-gn
+    #COMMAND ${_GN_COMMAND}
+    #WORKING_DIRECTORY "${WEBRTC_PARENT_DIR}"
+    #COMMENT "Fetching gn${_SUFFIX} for ${_PLATFORM}"
+    #DEPENDS webrtc-sync
+#)
+#set(_DEPENDENCIES ${_DEPENDENCIES} webrtc-gn)
 
 set(_CLANG_FORMAT_COMMAND download_from_google_storage${_SCRIPT_SUFFIX} --no_resume
     --platform=${_PLATFORM} --no_auth --bucket chromium-clang-format
@@ -130,7 +130,7 @@ libwebrtc_command(
     COMMAND ${_CLANG_FORMAT_COMMAND}
     WORKING_DIRECTORY "${WEBRTC_PARENT_DIR}"
     COMMENT "Fetching clang-format${_SUFFIX} for ${_PLATFORM}"
-    DEPENDS webrtc-gn
+    DEPENDS webrtc-sync
 )
 set(_DEPENDENCIES ${_DEPENDENCIES} webrtc-clang-format)
 
