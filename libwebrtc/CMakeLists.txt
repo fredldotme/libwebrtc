@@ -29,6 +29,8 @@ if (${_OBJ_EXCLUDED_LEN} GREATER "0")
   list(REMOVE_ITEM _OBJ_FILES ${_OBJ_EXCLUDED})
 endif ()
 
+set(CMAKE_DEBUG_POSTFIX d)
+
 add_library(webrtc STATIC ${_OBJ_FILES})
 
 set_source_files_properties(${_OBJ_FILES} PROPERTIES

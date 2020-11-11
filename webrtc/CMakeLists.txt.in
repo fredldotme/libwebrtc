@@ -134,6 +134,17 @@ libwebrtc_command(
 )
 set(_DEPENDENCIES ${_DEPENDENCIES} webrtc-clang-format)
 
+if (WIN32)
+libwebrtc_command(
+    NAME webrtc-patch-crt
+    COMMAND ${CMAKE_COMMAND} -P ${WEBRTC_PARENT_DIR}/../../CMakeModules/PatchWebRTC.cmake ${WEBRTC_PARENT_DIR}/src/build/config/win/BUILD.gn
+    WORKING_DIRECTORY "${WEBRTC_PARENT_DIR}"
+    COMMENT "Patching webrtc to use dynamic runtime"
+    DEPENDS webrtc-sync
+)
+set(_DEPENDENCIES ${_DEPENDENCIES} webrtc-patch-crt)
+endif()
+
 include(Gn)
 
 libwebrtc_command(
