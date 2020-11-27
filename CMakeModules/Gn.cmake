@@ -1,8 +1,12 @@
-set(_GEN_ARGS use_gold=false target_cpu=\\"${TARGET_CPU}\\" target_os=\\"${TARGET_OS}\\" is_component_build=false is_clang=false use_custom_libcxx=false use_custom_libcxx_for_host=false rtc_use_protobuf=false)
+set(_GEN_ARGS use_gold=false target_cpu=\\"${TARGET_CPU}\\" target_os=\\"${TARGET_OS}\\" is_component_build=false use_custom_libcxx=false use_custom_libcxx_for_host=false)
+
+if (MSVC)
+  set(_GEN_ARGS ${_GEN_ARGS} is_clang=false)
+  set(_GEN_ARGS ${_GEN_ARGS} enable_iterator_debugging=$<$<CONFIG:Debug>:true>$<$<CONFIG:Release>:false>$<$<CONFIG:RelWithDebInfo>:false>$<$<CONFIG:MinSizeRel>:false>)
+endif(MSVC)
 
 if (MSVC OR XCODE)
   set(_GEN_ARGS ${_GEN_ARGS} is_debug=$<$<CONFIG:Debug>:true>$<$<CONFIG:Release>:false>$<$<CONFIG:RelWithDebInfo>:false>$<$<CONFIG:MinSizeRel>:false>)
-  set(_GEN_ARGS ${_GEN_ARGS} enable_iterator_debugging=$<$<CONFIG:Debug>:true>$<$<CONFIG:Release>:false>$<$<CONFIG:RelWithDebInfo>:false>$<$<CONFIG:MinSizeRel>:false>)
   set(_NINJA_BUILD_DIR out/$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:Release>$<$<CONFIG:MinSizeRel>:Release>)
 elseif (CMAKE_BUILD_TYPE MATCHES Debug)
   set(_GEN_ARGS ${_GEN_ARGS} is_debug=true)
