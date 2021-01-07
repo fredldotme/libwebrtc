@@ -1,0 +1,23 @@
+kind: pipeline
+name: windows
+type: docker
+
+platform:
+  os: windows
+  arch: amd64
+
+trigger:
+  branch:
+    - dev
+  event:
+    - push
+
+steps:
+  - name: build
+    image: grantsheehan/rust-windows # https://github.com/Mersive-Technologies/kepler-ci_cd/blob/master/drone/dockerfiles/rust-windows
+    environment:
+      ARTIFACTORY_PASSWORD:
+        from_secret: artifactory-password
+    commands:
+      - powershell Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser
+      - powershell .\rust\rsusbipclient\build.ps1
