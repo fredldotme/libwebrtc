@@ -13,7 +13,7 @@ $env:PATH="$env:PATH;C:\Program Files\Git\bin"
 LogBanner "running cmake..."
 mkdir out
 cd out
-cmake .. -DTARGET_CPU=x86
+cmake .. -G "Visual Studio 15 2017"-DTARGET_CPU=x86
 
 LogBanner "running msbuild..."
 msbuild libwebrtc.sln /p:Configuration=Release /p:Platform=Win32 /target:ALL_BUILD
