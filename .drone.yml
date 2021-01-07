@@ -20,4 +20,4 @@ steps:
         from_secret: artifactory-password
     commands:
       - powershell Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser
-      - powershell .\rust\rsusbipclient\build.ps1
+      - powershell .\build.ps1
