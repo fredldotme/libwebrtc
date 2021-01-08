@@ -19,6 +19,7 @@ $env:PATH="$env:PATH;C:\Program Files\Git\bin"
 git reset --hard origin/dev
 ErrorOnExeFailure
 git status
+git fetch --tags
 ErrorOnExeFailure
 
 LogBanner "running cmake..."
