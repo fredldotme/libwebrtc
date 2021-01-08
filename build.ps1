@@ -11,6 +11,7 @@ $env:PATH="$env:PATH;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTo
 $env:PATH="$env:PATH;C:\Program Files\Git\bin"
 
 git reset --hard origin/dev
+git status
 
 LogBanner "running cmake..."
 mkdir out
