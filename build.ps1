@@ -33,8 +33,10 @@ ErrorOnExeFailure
 LogBanner "Copy file..."
 mkdir ..\archive_src
 xcopy /s lib ..\archive_src\lib\
+ErrorOnExeFailure
 cd .\webrtc\
 xcopy /s *.h ..\..\archive_src\webrtc\
+ErrorOnExeFailure
 cd ../..
 
 LogBanner "archiving..."
@@ -43,6 +45,7 @@ $branch=$env:DRONE_SOURCE_BRANCH
 $sha = $env:CI_COMMIT_SHA.Substring(0, 8)
 $packageName="libwebrtc_win_x86-$branch-$BUILD_TIME-$sha.zip"
 7z a -r $packageName .\archive_src\*
+ErrorOnExeFailure
 dir $packageName
 
 LogBanner "Deploying to Artifactory"
@@ -64,3 +67,4 @@ $params = @{
     Verbose         = $true
 }
 Invoke-WebRequest @params
+ErrorOnExeFailure
