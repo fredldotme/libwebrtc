@@ -4,22 +4,32 @@ function LogBanner($title) {
     Write-Host "************************************"
 }
 
+function ErrorOnExeFailure {
+    if (-not $?)
+    {
+        throw 'Last EXE Call Failed!'
+    }
+}
+
 LogBanner "installing dependencies..."
 choco install -y git
-refreshnv
 $env:PATH="$env:PATH;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 $env:PATH="$env:PATH;C:\Program Files\Git\bin"
 
 git reset --hard origin/dev
+ErrorOnExeFailure
 git status
+ErrorOnExeFailure
 
 LogBanner "running cmake..."
 mkdir out
 cd out
 cmake .. -G "Visual Studio 15 2017"-DTARGET_CPU=x86
+ErrorOnExeFailure
 
 LogBanner "running msbuild..."
 msbuild libwebrtc.sln /p:Configuration=Release /p:Platform=Win32 /target:ALL_BUILD
+ErrorOnExeFailure
 
 LogBanner "Copy file..."
 mkdir ..\archive_src
