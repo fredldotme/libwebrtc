@@ -12,6 +12,11 @@ function ErrorOnExeFailure {
 }
 
 LogBanner "installing dependencies..."
+choco source list
+choco source Add -Name artifactory -Source https://artifactory.mersive.xyz/artifactory/api/nuget/chocolatey
+choco source enable --name artifactory
+choco source disable --name chocolatey
+
 choco install --no-progress -y git
 choco install --no-progress -y visualstudio2017community
 choco install --no-progress -y visualstudio2017-workload-nativedesktop --package-parameters "--includeOptional"
