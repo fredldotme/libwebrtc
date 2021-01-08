@@ -21,6 +21,7 @@ choco install --no-progress -y git
 choco install --no-progress -y visualstudio2017community
 choco install --no-progress -y visualstudio2017-workload-nativedesktop --package-parameters "--includeOptional"
 choco install --no-progress -y windows-sdk-10.1 --version=10.1.17134.12
+choco install --no-progress -y windows-sdk-10-version-1803-windbg
 $env:PATH="$env:PATH;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 $env:PATH="$env:PATH;C:\Program Files\Git\bin"
 
