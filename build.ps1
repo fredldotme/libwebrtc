@@ -12,7 +12,7 @@ function ErrorOnExeFailure {
 }
 
 LogBanner "installing dependencies..."
-choco install -y git
+choco install -y git visualstudio2017community
 $env:PATH="$env:PATH;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 $env:PATH="$env:PATH;C:\Program Files\Git\bin"
 
@@ -27,7 +27,6 @@ ErrorOnExeFailure
 
 LogBanner "running msbuild..."
 msbuild libwebrtc.sln /p:Configuration=Release /p:Platform=Win32 /target:ALL_BUILD
-type "C:\drone\src\out\webrtc\src\build\vs_toolchain.py"
 ErrorOnExeFailure
 
 LogBanner "Copy file..."
