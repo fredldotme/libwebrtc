@@ -10,6 +10,8 @@ refreshnv
 $env:PATH="$env:PATH;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 $env:PATH="$env:PATH;C:\Program Files\Git\bin"
 
+git reset --hard origin/dev
+
 LogBanner "running cmake..."
 mkdir out
 cd out
