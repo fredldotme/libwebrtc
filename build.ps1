@@ -12,7 +12,7 @@ function ErrorOnExeFailure {
 }
 
 LogBanner "installing dependencies..."
-choco install -y git visualstudio2017community
+choco install -y git visualstudio2017-workload-nativedesktop
 $env:PATH="$env:PATH;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 $env:PATH="$env:PATH;C:\Program Files\Git\bin"
 
