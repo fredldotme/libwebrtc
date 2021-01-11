@@ -31,7 +31,7 @@ ErrorOnExeFailure
 LogBanner "running cmake..."
 mkdir out
 cd out
-cmake .. -G "Visual Studio 15 2017"-DTARGET_CPU=x86
+cmake .. -G "Visual Studio 15 2017" -DTARGET_CPU=x86
 ErrorOnExeFailure
 
 LogBanner "running msbuild..."
