@@ -18,12 +18,15 @@ choco source enable --name artifactory
 choco source disable --name chocolatey
 
 choco install --no-progress -y git
+ErrorOnExeFailure
 choco install --no-progress -y visualstudio2017community
-choco install --no-progress -y visualstudio2017-workload-nativedesktop --package-parameters "--includeOptional"
-choco install --no-progress -y windows-sdk-10.1 --version=10.1.17134.12
+ErrorOnExeFailure
+choco install --no-progress -y visualstudio2017-workload-nativedesktop --execution-timeout 5400 --package-parameters "--add Microsoft.Component.VC.Runtime.UCRTSDK --add Microsoft.VisualStudio.Component.VC.ATLMFC --add Microsoft.VisualStudio.Component.UWP.Support --add Microsoft.VisualStudio.ComponentGroup.UWP.VC"
+ErrorOnExeFailure
 choco install --no-progress -y windows-sdk-10-version-1803-windbg
-$env:PATH="$env:PATH;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
-$env:PATH="$env:PATH;C:\Program Files\Git\bin"
+ErrorOnExeFailure
+
+$env:PATH="$env:PATH;C:\Program Files\Git\bin;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 
 git fetch --tags
 ErrorOnExeFailure
@@ -31,7 +34,7 @@ ErrorOnExeFailure
 LogBanner "running cmake..."
 mkdir out
 cd out
-cmake .. -G "Visual Studio 15 2017"-DTARGET_CPU=x86
+cmake .. -G "Visual Studio 15 2017" -DTARGET_CPU=x86
 ErrorOnExeFailure
 
 LogBanner "running msbuild..."
