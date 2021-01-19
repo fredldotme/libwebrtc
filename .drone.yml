@@ -9,12 +9,13 @@ platform:
 trigger:
   branch:
     - dev
+    - conan_work
   event:
     - push
 
 steps:
   - name: build
-    image: grantsheehan/rust-windows # https://github.com/Mersive-Technologies/kepler-ci_cd/blob/master/drone/dockerfiles/rust-windows
+    image: artifactory.mersive.xyz/docker/libwebrtc-builder
     environment:
       ARTIFACTORY_PASSWORD:
         from_secret: artifactory-password
