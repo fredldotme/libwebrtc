@@ -25,8 +25,12 @@ choco install --no-progress -y visualstudio2017-workload-nativedesktop --executi
 ErrorOnExeFailure
 choco install --no-progress -y windows-sdk-10-version-1803-windbg
 ErrorOnExeFailure
+choco install --no-progress -y conan
+ErrorOnExeFailure
 
-$env:PATH="$env:PATH;C:\Program Files\Git\bin;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+$env:PATH="$env:PATH;C:\Program Files\Git\bin"
+$env:PATH="$env:PATH;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
+$env:PATH="$env:PATH;C:\Program Files\Conan\conan"
 
 git fetch --tags
 ErrorOnExeFailure
