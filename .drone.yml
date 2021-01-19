@@ -15,7 +15,7 @@ trigger:
 
 steps:
   - name: build
-    image: artifactory.mersive.xyz/docker/libwebrtc-builder
+    image: artifactory.mersive.xyz/docker-public/libwebrtc-builder
     environment:
       ARTIFACTORY_PASSWORD:
         from_secret: artifactory-password
