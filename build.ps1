@@ -12,8 +12,24 @@ function ErrorOnExeFailure {
 }
 
 LogBanner "installing dependencies..."
+choco source list
+choco source Add -Name artifactory -Source https://artifactory.mersive.xyz/artifactory/api/nuget/chocolatey
+choco source enable --name artifactory
+choco source disable --name chocolatey
+
+choco install --no-progress -y git
+ErrorOnExeFailure
+choco install --no-progress -y visualstudio2017community
+ErrorOnExeFailure
+choco install --no-progress -y visualstudio2017-workload-nativedesktop --execution-timeout 5400 --package-parameters "--add Microsoft.Component.VC.Runtime.UCRTSDK --add Microsoft.VisualStudio.Component.VC.ATLMFC --add Microsoft.VisualStudio.Component.UWP.Support --add Microsoft.VisualStudio.ComponentGroup.UWP.VC"
+ErrorOnExeFailure
+choco install --no-progress -y windows-sdk-10-version-1803-windbg
+ErrorOnExeFailure
 choco install --no-progress -y conan
 ErrorOnExeFailure
+
+$env:PATH="$env:PATH;C:\Program Files\Git\bin"
+$env:PATH="$env:PATH;C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
 $env:PATH="$env:PATH;C:\Program Files\Conan\conan"
 
 git fetch --tags
@@ -37,5 +53,5 @@ ErrorOnExeFailure
 LogBanner "Deploying to Artifactory"
 conan remote add mersive https://artifactory.mersive.xyz/artifactory/api/conan/conan-mersive
 conan user "ci-libwebrtc" -r mersive -p "$env:ARTIFACTORY_PASSWORD"
-conan upload "libwebrtc/0.1.0@ci/stable" --all -c -r mersive
+conan upload "libwebrtc/0.1.0@" --all -c -r mersive
 ErrorOnExeFailure
