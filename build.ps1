@@ -35,6 +35,7 @@ conan export-pkg . "libwebrtc/0.1.0" -s os="Windows" -s arch="x86"
 ErrorOnExeFailure
 
 LogBanner "Deploying to Artifactory"
-# TODO: Sign into the Artifactory respository correctly
+conan remote add mersive https://artifactory.mersive.xyz/artifactory/api/conan/conan-mersive
+conan user "ci-libwebrtc" -r mersive -p "$env:ARTIFACTORY_PASSWORD"
 conan upload "libwebrtc/0.1.0@ci/stable" --all -c -r mersive
 ErrorOnExeFailure
