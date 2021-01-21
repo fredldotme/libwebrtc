@@ -15,10 +15,13 @@ trigger:
 
 steps:
   - name: build
-    image: grantsheehan/rust-windows
+    image: grantsheehan/rust-windows #TODO: Use dedicated docker image
     environment:
-      ARTIFACTORY_PASSWORD:
+      CONAN_NON_INTERACTIVE: 1
+      CONAN_REVISIONS_ENABLED: 1
+      CONAN_LOGIN_USERNAME: ci-libwebrtc
+      CONAN_PASSWORD:
         from_secret: artifactory-password
     commands:
       - powershell Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser
-      - powershell .\build.ps1
+      - powershell .\build_windows.ps1
