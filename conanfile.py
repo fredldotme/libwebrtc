@@ -12,7 +12,7 @@ class LibwebrtcConan(ConanFile):
 
   def init(self):
     with open("version.txt", "r") as file:
-      self.version = file.read()
+      self.version = file.read().rstrip()
 
   def package(self):
     self.copy("*.h", src="out/webrtc", dst="webrtc")

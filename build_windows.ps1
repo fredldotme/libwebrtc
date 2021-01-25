@@ -40,7 +40,7 @@ ErrorOnExeFailure
 $commitHash = git rev-parse HEAD
 ErrorOnExeFailure
 
-$libwebrtcVersion = Get-Content -Path version.txt
+$libwebrtcVersion = (Get-Content -Path version.txt).TrimEnd()
 
 LogBanner "Configuring with CMake"
 mkdir out
