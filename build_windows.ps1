@@ -53,7 +53,7 @@ ErrorOnExeFailure
 
 LogBanner "Creating conan package from recipe..."
 cd ..
-((Get-Content -Path conadata.yml) -Replace 'replace_with_commit_hash', $commitHash) | Set-Content -Path conandata.yml
+((Get-Content -Path conandata.yml) -Replace 'replace_with_commit_hash', $commitHash) | Set-Content -Path conandata.yml
 conan export-pkg . "libwebrtc/${libwebrtcVersion}@" -s arch=x86
 ErrorOnExeFailure
 
