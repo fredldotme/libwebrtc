@@ -37,6 +37,9 @@ $env:PATH="$env:PATH;C:\Program Files\Conan\conan"
 git fetch --tags
 ErrorOnExeFailure
 
+$commitHash = git rev-parse HEAD
+ErrorOnExeFailure
+
 LogBanner "Configuring with CMake"
 mkdir out
 cd out
@@ -44,12 +47,14 @@ cmake .. -G "Visual Studio 15 2017" -DTARGET_CPU=x86
 ErrorOnExeFailure
 
 LogBanner "Performing Build"
+libwebrtcVersion = Get-Content -Path version.txt
 msbuild libwebrtc.sln /p:Configuration=Release /p:Platform=Win32 /target:ALL_BUILD
 ErrorOnExeFailure
 
 LogBanner "Creating conan package from recipe..."
 cd ..
-conan export-pkg . "libwebrtc/0.1.0@" -s arch=x86
+((Get-Content -Path conadata.yml) -Replace 'replace_with_commit_hash', $commitHash) | Set-Content -Path conandata.yml
+conan export-pkg . "libwebrtc/${libwebrtcVersion}@" -s arch=x86
 ErrorOnExeFailure
 
 LogBanner "Deploying to Artifactory"
@@ -63,5 +68,5 @@ Write-Host "Configuring Conan: Logging into Mersive Artifactory"
 conan user -p
 ErrorOnExeFailure
 Write-Host "Performing conan upload"
-conan upload "libwebrtc/0.1.0@" --all -c -r mersive
+conan upload "libwebrtc/${libwebrtcVersion}@" --all -c -r mersive
 ErrorOnExeFailure
