@@ -11,7 +11,7 @@ class LibwebrtcConan(ConanFile):
   exports = "version.txt"
 
   def init(self):
-    with open("version.txt", "r") as file
+    with open("version.txt", "r") as file:
       self.version = file.read()
 
   def package(self):
