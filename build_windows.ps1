@@ -40,6 +40,8 @@ ErrorOnExeFailure
 $commitHash = git rev-parse HEAD
 ErrorOnExeFailure
 
+$libwebrtcVersion = Get-Content -Path version.txt
+
 LogBanner "Configuring with CMake"
 mkdir out
 cd out
@@ -47,7 +49,6 @@ cmake .. -G "Visual Studio 15 2017" -DTARGET_CPU=x86
 ErrorOnExeFailure
 
 LogBanner "Performing Build"
-libwebrtcVersion = Get-Content -Path version.txt
 msbuild libwebrtc.sln /p:Configuration=Release /p:Platform=Win32 /target:ALL_BUILD
 ErrorOnExeFailure
 
