@@ -1,4 +1,5 @@
 from conans import ConanFile, tools
+import os
 
 class LibwebrtcConan(ConanFile):
   name = "libwebrtc"
@@ -11,7 +12,7 @@ class LibwebrtcConan(ConanFile):
   exports = "version.txt"
 
   def init(self):
-    with open("version.txt", "r") as file:
+    with open(os.path.join(self.recipe_folder, "version.txt"), "r") as file:
       self.version = file.read().rstrip()
 
   def package(self):
