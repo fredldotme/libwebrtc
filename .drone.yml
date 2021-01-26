@@ -16,7 +16,7 @@ trigger:
 
 steps:
   - name: Build
-    image: artifactory.mersive.xyz/docker-public/windows-libwebrtc-builder
+    image: artifactory.mersive.xyz/docker-public/windows-libwebrtc-builder:test
     commands:
       - powershell ./build_windows.ps1
   - name: Conan Deploy
