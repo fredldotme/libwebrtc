@@ -5,6 +5,10 @@ function ErrorOnExeFailure {
   }
 }
 
+Write-Host "Fetching git tags"
+git fetch --tags
+ErrorOnExeFailure
+
 Write-Host "Configuring with CMake"
 mkdir out
 cd out
