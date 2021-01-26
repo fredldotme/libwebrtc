@@ -16,7 +16,7 @@ trigger:
 
 steps:
   - name: Build
-    image: artifactory.mersive.xyz/artifactory/docker-public/windows-libwebrtc-builder
+    image: artifactory.mersive.xyz/docker-public/windows-libwebrtc-builder
     environment:
       CONAN_NON_INTERACTIVE: 1
       CONAN_REVISIONS_ENABLED: 1
