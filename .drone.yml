@@ -9,6 +9,7 @@ platform:
 trigger:
   branch:
     - dev
+    - conan_work
   event:
     - push
 
