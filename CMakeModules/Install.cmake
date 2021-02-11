@@ -81,6 +81,8 @@ install(FILES ${CMAKE_MODULE_PATH}/Templates/UseLibWebRTC.cmake
 
 #
 # Install CMake Targets file
+install(SCRIPT ${CMAKE_MODULE_PATH}/PatchCMakeTargets.cmake
+        COMPONENT cmake)
 install(DIRECTORY "${CMAKE_BINARY_DIR}/lib/cmake/LibWebRTC/"
         DESTINATION ${INSTALL_CMAKE_DIR}
         COMPONENT cmake
