@@ -1,10 +1,4 @@
-### Fork Notes
-Since aisouard's original repository is unmaintained, plenty of forks have popped up in order to handle the building of later libwebrtc releases. I couldn't find any that handled anything newer than release 'm74', so I've started another one. 
-
-You can find all the libwebrtc releases, along with the corresponding chromium version in which they shipped, here: https://chromiumdash.appspot.com/branches. E.g. as of this readme update, the latest stable version is [4044](https://webrtc.googlesource.com/src.git/+log/refs/branch-heads/4044) which shipped in Chromium 81.0.4044.96. 
-
-
-# libwebrtc [![License][license-img]][license-href] [![Join the chat at https://gitter.im/aisouard/libwebrtc][gitter-img]][gitter-href] [![Build Status][travis-img]][travis-href] [![Build Status][appveyor-img]][appveyor-href]
+# libwebrtc [![License][license-img]][license-href]
 
 This repository contains a collection of CMake scripts to help you embed
 Google's native WebRTC implementation inside your project as simple as this:
@@ -20,48 +14,6 @@ set(SOURCE_FILES main.cpp)
 add_executable(sample ${SOURCE_FILES})
 target_link_libraries(sample ${LIBWEBRTC_LIBRARIES})
 ```
-
-It also produces a `pkg-config` file if you prefer the classic way:
-
-```
-$ g++ `pkg-config --cflags LibWebRTC` main.cpp -o main `pkg-config --libs LibWebRTC`
-```
-
-## Status
-
-The following table displays the current state of this project, including
-supported platforms and architectures.
-
-<table>
-  <tr>
-    <td align="center"></td>
-    <td align="center">x86</td>
-    <td align="center">x64</td>
-    <td align="center">arm</td>
-    <td align="center">arm64</td>
-  </tr>
-  <tr>
-    <th align="center">Linux</th>
-    <td align="center">✔</td>
-    <td align="center">✔</td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr>
-    <th align="center">macOS</th>
-    <td align="center">-</td>
-    <td align="center">✔</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-  </tr>
-  <tr>
-    <th align="center">Windows</th>
-    <td align="center">✔</td>
-    <td align="center">✔</td>
-    <td></td>
-    <td></td>
-  </tr>
-</table>
 
 ## Prerequisites
 
@@ -90,7 +42,7 @@ supported platforms and architectures.
 ### Windows
 
 - Windows 7 x64 or later
-- Visual Studio 2015 **with updates** - Download the [Installer][vs2015-installer]
+- Visual Studio 2015/2017
 
   Make sure that you install the following components:
   
@@ -105,62 +57,39 @@ supported platforms and architectures.
 ## Compiling
 
 Clone the repository, create an output directory, browse inside it,
-then run CMake.
+then run CMake to configure project.
 
 ```
-$ git clone https://github.com/aisouard/libwebrtc.git
-$ cd libwebrtc
-$ mkdir out
-$ cd out
-$ cmake ..
+git clone https://github.com/UltraCoderRU/libwebrtc-build.git
+cd libwebrtc-build
+mkdir build
+cd build
+
+# Linux:
+cmake -DCMAKE_BUILD_TYPE=<Debug/Release> -DCMAKE_INSTALL_PREFIX=<install_path> ..
+
+# Windows
+cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX=<install_path> ..
 ```
 
-Windows users **must** add the Win64 suffix to their Visual Studio generator
-name if they want to build the library for 64-bit platforms, they'll omit it for
-32-bit builds and define the `TARGET_CPU` variable accordingly.
+After configuration build library using standard CMake commands.
 
 ```
-> cmake -G "Visual Studio 14 2015" -DTARGET_CPU=x86
-> cmake -G "Visual Studio 14 2015 Win64"
+# Linux:
+cmake --build .
+sudo cmake --build . --target install
+
+# Windows:
+cmake --build . --config <Debug/Release> --target INSTALL
 ```
 
-Then they'll have to open the `libwebrtc.sln` located inside the current output
-directory and build the `ALL_BUILD` project.
-
-Unix users will just have to run the following `make` commands.
-
-```
-$ make
-# make install
-```
-
-The library will be located inside the `lib` folder of the current output
-directory. The `include` folder will contain the header files. CMake scripts
-will be placed inside the `lib/cmake/LibWebRTC` directory.
-
-## Debug and Release configurations
-
-If you are using XCode or Visual Studio, you can simply switch between the Debug
-and Release configuration from your IDE. The debugging flags will be
-appended to the generator's parameters.
-
-Otherwise, you must define the `CMAKE_BUILD_TYPE` variable to `Debug`.
-
-```
-$ cmake -DCMAKE_BUILD_TYPE=Debug ..
-```
+The library will be located inside the `lib` subdirectory of the `<install_path>`.
+The `include` subdirectory will contain the header files.
+CMake scripts will be placed inside the `lib/cmake/LibWebRTC` subdirectory.
 
 ## Using WebRTC in your project
 
-At the time of writing this README file, there's no proper way to detect any
-installation of the WebRTC library and header files. In the meantime, this CMake
-script generates and declares a `LibWebRTC` package that will be very easy to
-use for your projects.
-
-All you have to do is include the package, then embed the "use file" that will
-automatically find the required libraries, define the proper compiling flags and
-include directories.
-
+To import LibWebRTC into your CMake project use `find_package`:
 ```cmake
 find_package(LibWebRTC REQUIRED)
 include(${LIBWEBRTC_USE_FILE})
@@ -168,11 +97,10 @@ include(${LIBWEBRTC_USE_FILE})
 target_link_libraries(my-app ${LIBWEBRTC_LIBRARIES})
 ```
 
-A pkg-config file is also provided, you can obtain the required compiler and
-linker flags by specifying `LibWebRTC` as the package name.
-
+You should add library installation path to `CMAKE_INSTALL_PREFIX` variable
+while configuring your project:
 ```
-$ pkg-config --cflags --libs LibWebRTC
+cmake -DCMAKE_PREFIX_PATH=<install_path> ...
 ```
 
 ## Fetching a specific revision
@@ -183,26 +111,12 @@ CMake variable, or another branch head ref into the **WEBRTC_BRANCH_HEAD**
 variable.
 
 ```
-$ cmake -DWEBRTC_REVISION=be22d51 ..
-$ cmake -DWEBRTC_BRANCH_HEAD=refs/branch-heads/4103 ..
+cmake -DWEBRTC_REVISION=be22d51 ..
+cmake -DWEBRTC_BRANCH_HEAD=refs/branch-heads/4103 ..
 ```
 
 If both variables are set, it will focus on fetching the commit defined inside
 **WEBRTC_REVISION**.
-
-## Managing depot_tools
-
-CMake will retrieve the latest revision of the `depot_tools` repository. It will
-get the WebRTC repository's commit date, then check-out `depot_tools` to the
-commit having the closest date to WebRTC's, in order to ensure a high
-compatibility with `gclient` and other tools.
-
-It is possible to prevent this behavior by specifying the location to your own
-`depot_tools` repository by defining the **DEPOT_TOOLS_PATH** variable.
-
-```
-$ cmake -DDEPOT_TOOLS_PATH=/opt/depot_tools ..
-```
 
 ## Configuration
 
@@ -272,14 +186,42 @@ perform cross-compiling.
 
     Set a specific commit hash to check-out.
 
-## Contributing
+## Status
 
-Feel free to open an issue if you wish a bug to be fixed, to discuss a new
-feature or to ask a question. I'm open to pull requests, as long as your
-modifications are working on the three major OS (Windows, macOS and Linux).
+The following table displays the current state of this project, including
+supported platforms and architectures.
 
-Don't forget to put your name and e-mail address inside the `AUTHORS` file!
-You can also reach me on [Twitter][twitter] for further discussion.
+<table>
+  <tr>
+    <td align="center"></td>
+    <td align="center">x86</td>
+    <td align="center">x64</td>
+    <td align="center">arm</td>
+    <td align="center">arm64</td>
+  </tr>
+  <tr>
+    <th align="center">Linux</th>
+    <td align="center">✔</td>
+    <td align="center">✔</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <th align="center">macOS</th>
+    <td align="center">-</td>
+    <td align="center">✔</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <th align="center">Windows</th>
+    <td align="center">✔</td>
+    <td align="center">✔</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+</table>
+
 
 ## Acknowledgements
 
@@ -291,22 +233,10 @@ Everything started from his
 which was a great source of inspiration for me to create the easiest way to link
 the WebRTC library in any native project.
 
-## License
-
-Apache License 2.0 © [Axel Isouard][author]
-
 [license-img]:https://img.shields.io/badge/License-Apache%202.0-blue.svg
 [license-href]:https://opensource.org/licenses/Apache-2.0
-[appveyor-img]:https://ci.appveyor.com/api/projects/status/yd1s303md3tt4w9a?svg=true
-[appveyor-href]:https://ci.appveyor.com/project/aisouard/libwebrtc
-[travis-img]:https://travis-ci.org/workshopx-app/libwebrtc-build.svg?branch=dev
-[travis-href]:https://travis-ci.org/workshopx/libwebrtc-build
-[gitter-img]:https://badges.gitter.im/aisouard/libwebrtc.svg
-[gitter-href]:https://gitter.im/aisouard/libwebrtc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [osx1011sdk]: https://github.com/phracker/MacOSX-SDKs/releases/download/MacOSX10.11.sdk/MacOSX10.11.sdk.tar.xz
-[vs2015-installer]:https://www.microsoft.com/en-US/download/details.aspx?id=48146
 [w10sdk]:https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
 [wdk10]:https://go.microsoft.com/fwlink/p/?LinkId=526733
-[twitter]:https://twitter.com/aisouard
 [webrtc-dr-alex-cmake]:http://webrtcbydralex.com/index.php/2015/07/22/automating-libwebrtc-build-with-cmake
 [author]:https://axel.isouard.fr
