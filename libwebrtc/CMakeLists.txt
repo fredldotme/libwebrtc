@@ -49,6 +49,7 @@ install(DIRECTORY
           "${WEBRTC_SOURCE_DIR}/api"
           "${WEBRTC_SOURCE_DIR}/base"
           "${WEBRTC_SOURCE_DIR}/call"
+          "${WEBRTC_SOURCE_DIR}/common_audio"
           "${WEBRTC_SOURCE_DIR}/common_video"
           "${WEBRTC_SOURCE_DIR}/logging"
           "${WEBRTC_SOURCE_DIR}/media"
