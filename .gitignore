@@ -1,6 +1,4 @@
-.DS_Store
-/out/
-/.idea/
-*.gclient
-*.gclient_entries
-/cmake-build-debug/
+.idea
+cmake-build-*
+webrtc
+depot_tools

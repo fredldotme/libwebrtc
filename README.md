@@ -4,7 +4,7 @@ This repository contains a collection of CMake scripts to help you embed
 Google's native WebRTC implementation inside your project as simple as this:
 
 ```cmake
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.9)
 project(sample)
 
 find_package(LibWebRTC REQUIRED)
@@ -17,7 +17,7 @@ target_link_libraries(sample ${LIBWEBRTC_LIBRARIES})
 
 ## Prerequisites
 
-- CMake 3.3 or later
+- CMake 3.9 or later
 - Python 2.7 (optional for Windows since it will use the interpreter located
   inside the `depot_tools` installation)
 
@@ -54,14 +54,26 @@ target_link_libraries(sample ${LIBWEBRTC_LIBRARIES})
   [Windows Driver Kit 10][wdk10] installed in the same Windows 10 SDK
   installation directory.
 
-## Compiling
-
-Clone the repository, create an output directory, browse inside it,
-then run CMake to configure project.
+## Getting sources
+Clone the repository and run script to fetch WebRTC sources.
+You can pass WebRTC version (branch) to script to fetch specific version.
 
 ```
-git clone https://github.com/UltraCoderRU/libwebrtc-build.git
-cd libwebrtc-build
+git clone https://github.com/UltraCoderRU/libwebrtc.git
+cd libwebrtc
+
+# Linux
+./sync.sh [WEBRTC_VERSION]
+
+# Windows
+sync.bat [WEBRTC_VERSION]
+```
+
+## Compiling
+
+Create an output directory, browse inside it, then run CMake to configure project.
+
+```
 mkdir build
 cd build
 
@@ -103,47 +115,11 @@ while configuring your project:
 cmake -DCMAKE_PREFIX_PATH=<install_path> ...
 ```
 
-## Fetching a specific revision
-
-The latest working release will be fetched by default, unless you decide to
-retrieve a specific commit by setting it's hash into the **WEBRTC_REVISION**
-CMake variable, or another branch head ref into the **WEBRTC_BRANCH_HEAD**
-variable.
-
-```
-cmake -DWEBRTC_REVISION=be22d51 ..
-cmake -DWEBRTC_BRANCH_HEAD=refs/branch-heads/4103 ..
-```
-
-If both variables are set, it will focus on fetching the commit defined inside
-**WEBRTC_REVISION**.
-
 ## Configuration
 
 The library will be compiled and usable on the same host's platform and
 architecture. Here are some CMake flags which could be useful if you need to
 perform cross-compiling.
-
-- **BUILD_DEB_PACKAGE**
-
-    Generate Debian package, defaults to OFF, available under Linux only.
-
-- **BUILD_RPM_PACKAGE**
-
-    Generate Red Hat package, defaults to OFF, available under Linux only.
-
-- **BUILD_TESTS**
-
-    Build WebRTC unit tests and mocked classes such as `FakeAudioCaptureModule`.
-
-- **BUILD_SAMPLE**
-
-    Build an executable located inside the `sample` folder.
-
-- **DEPOT_TOOLS_PATH**
-
-    Set this variable to your own `depot_tools` directory. This will prevent
-    CMake from fetching the one matching with the desired WebRTC revision.
 
 - **GN_EXTRA_ARGS**
 
@@ -152,39 +128,6 @@ perform cross-compiling.
 - **NINJA_ARGS**
 
     Arguments to pass while executing the `ninja` command.
-
-- **TARGET_OS**
-
-    Target operating system, the value will be used inside the `--target_os`
-    argument of the `gn gen` command. The value **must** be one of the following:
-    
-    - `android`
-    - `chromeos`
-    - `ios`
-    - `linux`
-    - `mac`
-    - `nacl`
-    - `win`
-
-- **TARGET_CPU**
-
-    Target architecture, the value will be used inside the `--target_cpu`
-    argument of the `gn gen` command. The value **must** be one of the following:
-    
-    - `x86`
-    - `x64`
-    - `arm`
-    - `arm64`
-    - `mipsel`
-
-- **WEBRTC_BRANCH_HEAD**
-
-    Set the branch head ref to retrieve, it is set to the latest working one.
-    This variable is ignored if **WEBRTC_REVISION** is set.
-
-- **WEBRTC_REVISION**
-
-    Set a specific commit hash to check-out.
 
 ## Status
 
@@ -195,19 +138,12 @@ supported platforms and architectures.
   <tr>
     <td align="center"></td>
     <td align="center">x86</td>
-    <td align="center">x64</td>
+    <td align="center">amd64</td>
     <td align="center">arm</td>
     <td align="center">arm64</td>
   </tr>
   <tr>
     <th align="center">Linux</th>
-    <td align="center">✔</td>
-    <td align="center">✔</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-  </tr>
-  <tr>
-    <th align="center">macOS</th>
     <td align="center">-</td>
     <td align="center">✔</td>
     <td align="center">-</td>
@@ -215,8 +151,29 @@ supported platforms and architectures.
   </tr>
   <tr>
     <th align="center">Windows</th>
+    <td align="center">-</td>
     <td align="center">✔</td>
-    <td align="center">✔</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <th align="center">MacOS</th>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <th align="center">Android</th>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <th align="center">iOS</th>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -229,14 +186,12 @@ Many thanks to Dr. Alex Gouaillard for being an excellent mentor for this
 project.
 
 Everything started from his
-« [Automating libwebrtc build with CMake][webrtc-dr-alex-cmake] » blog article,
+«[Automating libwebrtc build with CMake][webrtc-dr-alex-cmake]» blog article,
 which was a great source of inspiration for me to create the easiest way to link
 the WebRTC library in any native project.
 
 [license-img]:https://img.shields.io/badge/License-Apache%202.0-blue.svg
 [license-href]:https://opensource.org/licenses/Apache-2.0
-[osx1011sdk]: https://github.com/phracker/MacOSX-SDKs/releases/download/MacOSX10.11.sdk/MacOSX10.11.sdk.tar.xz
 [w10sdk]:https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
 [wdk10]:https://go.microsoft.com/fwlink/p/?LinkId=526733
 [webrtc-dr-alex-cmake]:http://webrtcbydralex.com/index.php/2015/07/22/automating-libwebrtc-build-with-cmake
-[author]:https://axel.isouard.fr

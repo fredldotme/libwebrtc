@@ -10,8 +10,8 @@ if (UNIX AND NOT APPLE)
   find_package(Threads REQUIRED)
   if (CMAKE_HAVE_THREADS_LIBRARY)
     list(APPEND LIBWEBRTC_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
-  endif (CMAKE_HAVE_THREADS_LIBRARY)
-endif (UNIX AND NOT APPLE)
+  endif ()
+endif ()
 
 if (APPLE)
   find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
@@ -22,9 +22,9 @@ if (APPLE)
 
   list(APPEND LIBWEBRTC_LIBRARIES ${AUDIOTOOLBOX_LIBRARY} ${COREAUDIO_LIBRARY}
        ${COREFOUNDATION_LIBRARY} ${COREGRAPHICS_LIBRARY} ${FOUNDATION_LIBRARY})
-endif (APPLE)
+endif ()
 
 if (WIN32)
   list(APPEND LIBWEBRTC_LIBRARIES msdmo.lib wmcodecdspuuid.lib dmoguids.lib
        crypt32.lib iphlpapi.lib ole32.lib secur32.lib winmm.lib ws2_32.lib)
-endif (WIN32)
+endif ()
