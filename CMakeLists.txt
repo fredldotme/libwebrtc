@@ -6,6 +6,7 @@ project(libwebrtc)
 
 option(GN_EXTRA_ARGS "Extra 'gn gen' arguments to pass when configuring WebRTC" "")
 option(NINJA_ARGS "Ninja arguments to pass when compiling WebRTC" "")
+option(BUILD_DEB_PACKAGE "Build .deb package" OFF)
 
 # Allow the use of IN_LIST operand
 cmake_policy(SET CMP0057 NEW)
