@@ -16,9 +16,12 @@ trigger:
 steps:
   - name: Create Automatic Tag
     image: alpine/git
+    environment:
+      SSH_KEY:
+        from_secret: github-ssh-key
     commands:
+      - mkdir -p ~/.ssh && echo $SSH_KEY > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
       - apk add --no-cache bash
-      - ls -lah ~/.netrc
       - ./version_tagging.sh
 ---
 kind: pipeline
@@ -56,3 +59,9 @@ steps:
         from_secret: artifactory-password
     commands:
       - ./deploy_windows.ps1
+---
+kind: secret
+name: github-ssh-key 
+get:
+  path: drone/data/libwebrtc/github_deploy_key
+  name: key
