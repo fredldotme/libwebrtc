@@ -18,8 +18,8 @@ steps:
     image: alpine/git
     commands:
       - apk add --no-cache bash
-      - git config --global url."https://github.com/".insteadOf "git@github.com:"
-      - exec ./version_tagging.sh
+      - ls -lah ~/.netrc
+      - ./version_tagging.sh
 ---
 kind: pipeline
 name: windows
