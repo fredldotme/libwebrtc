@@ -18,6 +18,7 @@ steps:
     image: alpine/git
     commands:
       - apk add --no-cache bash
+      - git config --global url."https://github.com/".insteadOf "git@github.com:"
       - exec ./version_tagging.sh
 ---
 kind: pipeline
@@ -40,7 +41,6 @@ steps:
       event:
         - tag
     commands:
-      - git config --global url."https://github.com/".insteadOf "git@github.com:"
       - ./version_replacement.ps1
   - name: Build
     image: artifactory.mersive.xyz/docker-public/windows-libwebrtc-builder
