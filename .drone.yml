@@ -22,6 +22,7 @@ steps:
     commands:
       - mkdir -p ~/.ssh && echo $SSH_KEY > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
       - git config --global url.ssh://git@github.com/.insteadOf https://github.com/
+      - ssh-keyscan github.com >> ~/.ssh/known_hosts
       - apk add --no-cache bash
       - ./version_tagging.sh
 ---
