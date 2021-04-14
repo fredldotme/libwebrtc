@@ -21,6 +21,7 @@ steps:
         from_secret: github-ssh-key
     commands:
       - mkdir -p ~/.ssh && echo $SSH_KEY > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+      - git config --global url.ssh://git@github.com/.insteadOf https://github.com/
       - apk add --no-cache bash
       - ./version_tagging.sh
 ---
