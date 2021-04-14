@@ -5,26 +5,24 @@ function ErrorOnExeFailure {
   }
 }
 
-Write-Host "Fetching git tags"
-git fetch --tags
-ErrorOnExeFailure
-
-$commitHash = git rev-parse HEAD
-ErrorOnExeFailure
-Write-Host "commitHash=[$commitHash]"
-
-$libwebrtcVersion = (Get-Content -Path version.txt).TrimEnd()
-Write-Host "libwebrtcVersion=[$libwebrtcVersion]"
+if ( $env:DRONE_TAG )
+{
+  $TARGET_REPOSITORY = "mersive-production"
+}
+else
+{
+  $TARGET_REPOSITORY = "mersive-test"
+}
 
 Write-Host "Creating conan package from recipe"
-((Get-Content -Path conandata.yml) -Replace 'replace_with_commit_hash', $commitHash) | Set-Content -Path conandata.yml
-conan export-pkg . "libwebrtc/${libwebrtcVersion}@" -s arch=x86
+conan export-pkg . -s arch=x86
+conan export-pkg . -s arch=x86_64
 ErrorOnExeFailure
 
 Write-Host "Deploying to Artifactory"
-conan user -p
+conan user -r $TARGET_REPOSITORY -p
 ErrorOnExeFailure
 
 Write-Host "Performing conan upload"
-conan upload "libwebrtc/${libwebrtcVersion}@" --all -c -r mersive-production
+conan upload "libwebrtc/*" --all -c -r $TARGET_REPOSITORY
 ErrorOnExeFailure
