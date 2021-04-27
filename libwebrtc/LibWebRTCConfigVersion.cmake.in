@@ -1,0 +1,8 @@
+# The full LibWebRTC version number.
+set(PACKAGE_VERSION "@WEBRTC_VERSION@")
+
+# This version is compatible only with equal version
+if ("${PACKAGE_FIND_VERSION}" VERSION_EQUAL "@WEBRTC_VERSION@")
+  set(PACKAGE_VERSION_COMPATIBLE 1)
+  set(PACKAGE_VERSION_EXACT 1)
+endif ()

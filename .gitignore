@@ -3,6 +3,7 @@
 /.idea/
 *.gclient
 *.gclient_entries
-/cmake-build-debug/
-
 .vscode/
+cmake-build-*
+webrtc
+depot_tools
