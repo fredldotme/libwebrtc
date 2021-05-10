@@ -4,10 +4,16 @@ set -e
 # To determine last stable WebRTC revision,
 # see https://chromiumdash.appspot.com/branches
 # and https://chromiumdash.appspot.com/schedule
-WEBRTC_REVISION=4280
+if test -z "${WEBRTC_REVISION}"; then
+  WEBRTC_REVISION=4280
 
-if [ $# -eq 1 ]; then
-  WEBRTC_REVISION=$1
+  if [ $# -eq 1 ]; then
+    WEBRTC_REVISION=$1
+  fi
+fi
+
+if test -z "${WEBRTC_FETCH}"; then
+  WEBRTC_FETCH=webrtc
 fi
 
 REPO_ROOT=$(dirname $(readlink -f $0))
@@ -30,7 +36,7 @@ then
     echo "Cloning WebRTC..."
     mkdir webrtc
     cd webrtc
-    fetch --nohooks --no-history webrtc
+    fetch --nohooks --no-history ${WEBRTC_FETCH}
 fi
 
 echo "Updating WebRTC to version ${WEBRTC_REVISION}..."
