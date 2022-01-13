@@ -50,9 +50,11 @@ steps:
   - name: Build
     image: artifactory.mersive.xyz/docker-public/windows-libwebrtc-builder
     commands:
+      - systeminfo
+      - wmic logicaldisk get freespace
       - ./build_windows.ps1
   - name: Conan Deploy
-    image: artifactory.mersive.xyz/docker-public/windows-basic
+    image: artifactory.mersive.xyz/docker-public/windows-basic:0.3
     environment:
       CONAN_NON_INTERACTIVE: 1
       CONAN_REVISIONS_ENABLED: 1
