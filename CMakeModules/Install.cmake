@@ -1,7 +1,7 @@
 #
 # Install library
 file(GLOB_RECURSE _LIBRARY_FILES
-     ${CMAKE_BINARY_DIR}/lib/*${CMAKE_STATIC_LIBRARY_SUFFIX})
+     ${CMAKE_CURRENT_BINARY_DIR}/lib/*${CMAKE_STATIC_LIBRARY_SUFFIX})
 
 install(FILES ${_LIBRARY_FILES}
         DESTINATION ${INSTALL_LIB_DIR}
@@ -9,7 +9,7 @@ install(FILES ${_LIBRARY_FILES}
 
 #
 # Install headers
-install(DIRECTORY "${CMAKE_BINARY_DIR}/include/"
+install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include/"
         DESTINATION ${INSTALL_INCLUDE_DIR}
         COMPONENT include
         FILES_MATCHING PATTERN "*.h")
@@ -17,16 +17,16 @@ install(DIRECTORY "${CMAKE_BINARY_DIR}/include/"
 #
 # Install CMake Config file
 configure_file(${CMAKE_MODULE_PATH}/Templates/LibWebRTCConfig.cmake.in
-               ${CMAKE_BINARY_DIR}/LibWebRTCConfig.cmake @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/LibWebRTCConfig.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/LibWebRTCConfig.cmake @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LibWebRTCConfig.cmake
         DESTINATION ${INSTALL_CMAKE_DIR}
         COMPONENT cmake)
 
 #
 # Install CMake ConfigVersion file
 configure_file(${CMAKE_MODULE_PATH}/Templates/LibWebRTCConfigVersion.cmake.in
-               ${CMAKE_BINARY_DIR}/LibWebRTCConfigVersion.cmake @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/LibWebRTCConfigVersion.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/LibWebRTCConfigVersion.cmake @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LibWebRTCConfigVersion.cmake
         DESTINATION ${INSTALL_CMAKE_DIR}
         COMPONENT cmake)
 
@@ -67,8 +67,8 @@ if (UNIX)
   string(REPLACE ";" " " LIBWEBRTC_PC_CXXFLAGS "${LIBWEBRTC_REQUIRED_CXX_FLAGS}")
 
   configure_file(${CMAKE_MODULE_PATH}/Templates/LibWebRTC.pc.in
-                 ${CMAKE_BINARY_DIR}/LibWebRTC.pc @ONLY)
-  install(FILES ${CMAKE_BINARY_DIR}/LibWebRTC.pc
+                 ${CMAKE_CURRENT_BINARY_DIR}/LibWebRTC.pc @ONLY)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/LibWebRTC.pc
           DESTINATION ${INSTALL_PKGCONFIG_DIR}
           COMPONENT cmake)
 endif (UNIX)
@@ -81,7 +81,7 @@ install(FILES ${CMAKE_MODULE_PATH}/Templates/UseLibWebRTC.cmake
 
 #
 # Install CMake Targets file
-install(DIRECTORY "${CMAKE_BINARY_DIR}/lib/cmake/LibWebRTC/"
+install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/LibWebRTC/"
         DESTINATION ${INSTALL_CMAKE_DIR}
         COMPONENT cmake
         FILES_MATCHING PATTERN "*.cmake")
@@ -90,8 +90,8 @@ install(DIRECTORY "${CMAKE_BINARY_DIR}/lib/cmake/LibWebRTC/"
 # Add uninstall target
 configure_file(
     "${CMAKE_MODULE_PATH}/Templates/Uninstall.cmake.in"
-    "${CMAKE_BINARY_DIR}/Uninstall.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/Uninstall.cmake"
     IMMEDIATE @ONLY)
 
 add_custom_target(uninstall
-                  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/Uninstall.cmake)
+                  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/Uninstall.cmake)

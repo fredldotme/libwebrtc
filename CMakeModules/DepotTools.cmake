@@ -8,7 +8,7 @@ if (WEBRTC_REVISION)
   libwebrtc_execute(
       COMMAND ${GIT_EXECUTABLE} log -1 --format=%ci ${WEBRTC_REVISION}
       OUTPUT_VARIABLE _WEBRTC_COMMIT_DATE
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       STAMPFILE webrtc-revision-commit-date
       STATUS "Retrieving date for commit ${WEBRTC_REVISION}"
       ERROR "Unable to find webrtc commit date at ${WEBRTC_REVISION}"
@@ -17,7 +17,7 @@ elseif (WEBRTC_BRANCH_HEAD)
   libwebrtc_execute(
       COMMAND ${GIT_EXECUTABLE} log -1 --format=%ci
       OUTPUT_VARIABLE _WEBRTC_COMMIT_DATE
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       STAMPFILE webrtc-branch-head-commit-date
       STATUS "Retrieving date for ${WEBRTC_BRANCH_HEAD}"
       ERROR "Unable to retrieve the commit date for ${WEBRTC_BRANCH_HEAD}"

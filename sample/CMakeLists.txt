@@ -8,7 +8,7 @@ set(SOURCE_FILES main.cpp)
 add_executable(sample ${SOURCE_FILES})
 target_link_libraries(sample ${LIBWEBRTC_LIBRARIES})
 
-set(_STAMP_FILE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check-sample-done)
+set(_STAMP_FILE ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/check-sample-done)
 add_custom_command(
     OUTPUT ${_STAMP_FILE}
     COMMENT "Run generated sample"

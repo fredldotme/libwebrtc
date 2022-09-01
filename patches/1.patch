@@ -1,0 +1,13 @@
+diff --git a/linux/sysroot_scripts/install-sysroot.py b/linux/sysroot_scripts/install-sysroot.py
+index 90b7068..037b841 100755
+--- a/linux/sysroot_scripts/install-sysroot.py
++++ b/linux/sysroot_scripts/install-sysroot.py
+@@ -70,6 +70,8 @@ def DetectHostArch():
+     return 'arm'
+   elif detected_host_arch == 'arm64':
+     return 'arm64'
++  elif detected_host_arch == 'aarch64':
++    return 'arm64'
+   elif detected_host_arch == 'mips':
+     return 'mips'
+   elif detected_host_arch == 'ppc':

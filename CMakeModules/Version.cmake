@@ -3,7 +3,7 @@ include(LibWebRTCExecute)
 libwebrtc_execute(
     COMMAND ${GIT_EXECUTABLE} describe --tags --dirty=-dirty
     OUTPUT_VARIABLE _LIBWEBRTC_TAG
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     STAMPFILE webrtc-current-tag
     STATUS "Retrieving current git tag"
     ERROR "Unable to retrieve the current git tag"

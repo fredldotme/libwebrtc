@@ -13,7 +13,7 @@ endif (WIN32)
 list(APPEND _WEBRTC_PATH ${DEPOT_TOOLS_PATH} $ENV{PATH})
 
 get_filename_component(_CHROMIUM_PYTHONPATH
-                       "${CMAKE_SOURCE_DIR}/build"
+                       "${CMAKE_CURRENT_SOURCE_DIR}/build"
                        REALPATH)
 
 if (WIN32)
