@@ -37,7 +37,6 @@ if (NOT HAS_OWN_DEPOT_TOOLS)
 
       GIT_REPOSITORY https://chromium.googlesource.com/chromium/tools/depot_tools
       GIT_TAG main
-      #GIT_SHALLOW 1
 
       PREFIX ${CMAKE_CURRENT_BINARY_DIR}/depot_tools
 
@@ -88,9 +87,10 @@ ExternalProject_Add(
     TMP_DIR ${CMAKE_CURRENT_BINARY_DIR}/webrtc/tmp
 
     PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/webrtc/CMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/webrtc/src/CMakeLists.txt
-    COMMAND patch -p1 -d ${CMAKE_CURRENT_BINARY_DIR}/webrtc/src/build < ${CMAKE_CURRENT_SOURCE_DIR}/patches/1.patch || true
     UPDATE_COMMAND ""
     INSTALL_COMMAND ""
+
+    COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/patches ${CMAKE_CURRENT_BINARY_DIR}/webrtc/src/
 
     CMAKE_ARGS
     ${_WEBRTC_CMAKE_ARGS}

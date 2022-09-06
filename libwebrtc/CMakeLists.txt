@@ -4,8 +4,7 @@ project(libwebrtc)
 set(_OBJ_EXT ${CMAKE_CXX_OUTPUT_EXTENSION})
 
 file(GLOB_RECURSE _OBJ_FILES
-     ${WEBRTC_OUTPUT_DIR}/obj/*${_OBJ_EXT}
-     ${WEBRTC_OUTPUT_DIR}/clang_x64/obj/*${_OBJ_EXT})
+     ${WEBRTC_OUTPUT_DIR}/obj/*${_OBJ_EXT})
 
 if (NOT _OBJ_EXT STREQUAL ".o")
   file(GLOB_RECURSE _OBJ_FILES_ASM
@@ -14,6 +13,7 @@ if (NOT _OBJ_EXT STREQUAL ".o")
 endif (NOT _OBJ_EXT STREQUAL ".o")
 
 file(GLOB_RECURSE _OBJ_EXCLUDED
+     ${WEBRTC_OUTPUT_DIR}/clang_x64/obj/*${_OBJ_EXT}
      ${WEBRTC_OUTPUT_DIR}/obj/third_party/yasm/gen*/*${_OBJ_EXT}
      ${WEBRTC_OUTPUT_DIR}/obj/third_party/yasm/re2c/*${_OBJ_EXT}
      ${WEBRTC_OUTPUT_DIR}/obj/third_party/yasm/yasm/*${_OBJ_EXT}
