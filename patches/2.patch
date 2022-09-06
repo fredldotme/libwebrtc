@@ -1,0 +1,967 @@
+diff --git a/webrtc/media/BUILD.gn b/webrtc/media/BUILD.gn
+index d33b399d7c..c3b16a9958 100644
+--- a/webrtc/media/BUILD.gn
++++ b/webrtc/media/BUILD.gn
+@@ -408,6 +408,10 @@ if (rtc_include_tests) {
+       defines += [ "WEBRTC_USE_H264" ]
+     }
+ 
++    if (rtc_use_hybris) {
++      defines += [ "WEBRTC_USE_HYBRIS_H264" ]
++    }
++
+     if (rtc_opus_support_120ms_ptime) {
+       defines += [ "WEBRTC_OPUS_SUPPORT_120MS_PTIME=1" ]
+     } else {
+diff --git a/webrtc/modules/video_coding/BUILD.gn b/webrtc/modules/video_coding/BUILD.gn
+index 19942a12fc..ba7841c1b0 100644
+--- a/webrtc/modules/video_coding/BUILD.gn
++++ b/webrtc/modules/video_coding/BUILD.gn
+@@ -106,6 +106,18 @@ rtc_static_library("video_coding") {
+     "../rtp_rtcp:rtp_rtcp",
+     "../utility:utility",
+   ]
++
++  if (rtc_use_hybris) {
++    defines = [ "WEBRTC_USE_HYBRIS" ]
++    sources += [
++      "codecs/hybris/hybris_decoder_impl.cc",
++      "codecs/hybris/hybris_decoder_impl.h",
++    ]
++    deps += [
++      "../../common_video",
++      "../../media:rtc_media_base",
++    ]
++  }
+ }
+ 
+ rtc_static_library("video_coding_utility") {
+@@ -161,6 +173,10 @@ rtc_static_library("webrtc_h264") {
+     "../../system_wrappers",
+   ]
+ 
++  if (rtc_use_hybris) {
++    defines += [ "WEBRTC_USE_HYBRIS" ]
++  }
++
+   if (rtc_use_h264) {
+     defines += [ "WEBRTC_USE_H264" ]
+     if (rtc_initialize_ffmpeg) {
+@@ -225,6 +241,7 @@ rtc_static_library("webrtc_vp8") {
+     suppressed_configs += [ "//build/config/clang:find_bad_constructs" ]
+   }
+ 
++  defines = []
+   deps = [
+     ":video_coding_utility",
+     "..:module_api",
+@@ -235,6 +252,11 @@ rtc_static_library("webrtc_vp8") {
+     "../../common_video",
+     "../../system_wrappers",
+   ]
++
++  if (rtc_use_hybris) {
++    defines += [ "WEBRTC_USE_HYBRIS" ]
++  }
++
+   if (rtc_build_libvpx) {
+     deps += [ rtc_libvpx_dir ]
+   }
+@@ -262,6 +284,7 @@ rtc_static_library("webrtc_vp9") {
+     suppressed_configs += [ "//build/config/clang:find_bad_constructs" ]
+   }
+ 
++  defines = []
+   deps = [
+     ":video_coding_utility",
+     "..:module_api",
+@@ -269,6 +292,11 @@ rtc_static_library("webrtc_vp9") {
+     "../../common_video",
+     "../../system_wrappers",
+   ]
++
++  if (rtc_use_hybris) {
++    defines += [ "WEBRTC_USE_HYBRIS" ]
++  }
++
+   if (rtc_build_libvpx) {
+     deps += [ rtc_libvpx_dir ]
+   }
+diff --git a/webrtc/modules/video_coding/codecs/h264/h264.cc b/webrtc/modules/video_coding/codecs/h264/h264.cc
+index 1e3a5809eb..a3959a7f3d 100644
+--- a/webrtc/modules/video_coding/codecs/h264/h264.cc
++++ b/webrtc/modules/video_coding/codecs/h264/h264.cc
+@@ -15,6 +15,9 @@
+ #include "webrtc/modules/video_coding/codecs/h264/h264_decoder_impl.h"
+ #include "webrtc/modules/video_coding/codecs/h264/h264_encoder_impl.h"
+ #endif
++#if defined(WEBRTC_USE_HYBRIS)
++#include "webrtc/modules/video_coding/codecs/hybris/hybris_decoder_impl.h"
++#endif
+ 
+ #include "webrtc/base/checks.h"
+ #include "webrtc/base/logging.h"
+@@ -23,30 +26,30 @@ namespace webrtc {
+ 
+ namespace {
+ 
+-#if defined(WEBRTC_USE_H264)
++#if defined(WEBRTC_USE_H264) || defined(WEBRTC_USE_HYBRIS)
+ bool g_rtc_use_h264 = true;
+ #endif
+ 
+ }  // namespace
+ 
+ void DisableRtcUseH264() {
+-#if defined(WEBRTC_USE_H264)
++#if defined(WEBRTC_USE_H264) || defined(WEBRTC_USE_HYBRIS)
+   g_rtc_use_h264 = false;
+ #endif
+ }
+ 
+ // If any H.264 codec is supported (iOS HW or OpenH264/FFmpeg).
+ bool IsH264CodecSupported() {
+-#if defined(WEBRTC_USE_H264)
++#if defined(WEBRTC_USE_H264) || defined(WEBRTC_USE_HYBRIS)
+   return g_rtc_use_h264;
+ #else
+   return false;
+ #endif
+ }
+ 
+-H264Encoder* H264Encoder::Create(const cricket::VideoCodec& codec) {
++VideoEncoder* H264Encoder::Create(const cricket::VideoCodec& codec) {
+   RTC_DCHECK(H264Encoder::IsSupported());
+-#if defined(WEBRTC_USE_H264)
++#if defined(WEBRTC_USE_H264) || defined(WEBRTC_USE_HYBRIS)
+   RTC_CHECK(g_rtc_use_h264);
+   LOG(LS_INFO) << "Creating H264EncoderImpl.";
+   return new H264EncoderImpl(codec);
+@@ -60,8 +63,14 @@ bool H264Encoder::IsSupported() {
+   return IsH264CodecSupported();
+ }
+ 
+-H264Decoder* H264Decoder::Create() {
++VideoDecoder* H264Decoder::Create() {
+   RTC_DCHECK(H264Decoder::IsSupported());
++#if defined(WEBRTC_USE_HYBRIS)
++  RTC_CHECK(g_rtc_use_h264);
++  LOG(LS_INFO) << "Creating HybrisDecoderImpl.";
++  if (HybrisDecoderImpl::IsSupported(kVideoCodecH264))
++    return new HybrisDecoderImpl(kVideoCodecH264);
++#endif
+ #if defined(WEBRTC_USE_H264)
+   RTC_CHECK(g_rtc_use_h264);
+   LOG(LS_INFO) << "Creating H264DecoderImpl.";
+diff --git a/webrtc/modules/video_coding/codecs/h264/include/h264.h b/webrtc/modules/video_coding/codecs/h264/include/h264.h
+index 2d92473ab5..6190946c75 100644
+--- a/webrtc/modules/video_coding/codecs/h264/include/h264.h
++++ b/webrtc/modules/video_coding/codecs/h264/include/h264.h
+@@ -25,7 +25,7 @@ void DisableRtcUseH264();
+ 
+ class H264Encoder : public VideoEncoder {
+  public:
+-  static H264Encoder* Create(const cricket::VideoCodec& codec);
++  static VideoEncoder* Create(const cricket::VideoCodec& codec);
+   // If H.264 is supported (any implementation).
+   static bool IsSupported();
+ 
+@@ -34,7 +34,7 @@ class H264Encoder : public VideoEncoder {
+ 
+ class H264Decoder : public VideoDecoder {
+  public:
+-  static H264Decoder* Create();
++  static VideoDecoder* Create();
+   static bool IsSupported();
+ 
+   ~H264Decoder() override {}
+diff --git a/webrtc/modules/video_coding/codecs/hybris/hybris_decoder_impl.cc b/webrtc/modules/video_coding/codecs/hybris/hybris_decoder_impl.cc
+new file mode 100644
+index 0000000000..8a01691ee2
+--- /dev/null
++++ b/webrtc/modules/video_coding/codecs/hybris/hybris_decoder_impl.cc
+@@ -0,0 +1,503 @@
++/*
++ *  Copyright (c) 2022 Alfred Neumayer. All Rights Reserved.
++ *
++ *  Use of this source code is governed by a BSD-style license
++ *  that can be found in the LICENSE file in the root of the source
++ *  tree. An additional intellectual property rights grant can be found
++ *  in the file PATENTS.  All contributing project authors may
++ *  be found in the AUTHORS file in the root of the source tree.
++ *
++ */
++
++#include "webrtc/modules/video_coding/codecs/hybris/hybris_decoder_impl.h"
++
++#include <algorithm>
++#include <limits>
++#include <string>
++#include <vector>
++
++#include "webrtc/api/video/i420_buffer.h"
++#include "webrtc/base/checks.h"
++#include "webrtc/base/criticalsection.h"
++#include "webrtc/base/keep_ref_until_done.h"
++#include "webrtc/base/logging.h"
++#include "webrtc/common_video/include/video_frame_buffer.h"
++#include "webrtc/system_wrappers/include/metrics.h"
++#include "webrtc/common_video/libyuv/include/webrtc_libyuv.h"
++#include "webrtc/common_types.h"
++#include "webrtc/modules/video_coding/include/video_error_codes.h"
++
++#include "libyuv/convert.h"
++
++namespace webrtc {
++
++namespace {
++
++// Used by histograms. Values of entries should not be changed.
++enum H264DecoderImplEvent {
++  kHybrisDecoderEventInit = 0,
++  kHybrisDecoderEventError = 1,
++  kHybrisDecoderEventMax = 16,
++};
++
++//static const int32_t COLOR_FormatYUV420Planar = 0x00000013;
++static const int32_t COLOR_FormatYUV420PackedSemiPlanar = 0x00000027;
++static const int32_t COLOR_FormatYUV420SemiPlanar = 0x00000015;
++
++static const char* kVideoMimeTypeH264 = "video/avc";
++static const char* kVideoMimeTypeVP8 = "video/x-vnd.on2.vp8";
++static const char* kVideoMimeTypeVP9 = "video/x-vnd.on2.vp9";
++
++static const char* MimeTypeForCodecType(VideoCodecType type) {
++  switch(type) {
++  case kVideoCodecH264:
++    return kVideoMimeTypeH264;
++  case kVideoCodecVP8:
++    return kVideoMimeTypeVP8;
++  case kVideoCodecVP9:
++    return kVideoMimeTypeVP9;
++  default:
++    return nullptr;
++  }
++}
++
++}  // namespace
++
++bool HybrisDecoderImpl::IsSupported(VideoCodecType type)
++{
++  if (type != kVideoCodecH264 &&
++      type != kVideoCodecVP8 &&
++      type != kVideoCodecVP9) {
++    return false;
++  }
++
++  const char* hybris_codec_type = MimeTypeForCodecType(type);
++  if (!hybris_codec_type) {
++    return false;
++  }
++
++  std::string codec_type = std::string(hybris_codec_type);
++  std::string hybris_codec_name = FindSuitableCodec(codec_type, true);
++  if (hybris_codec_name.length() == 0) {
++    hybris_codec_name = FindSuitableCodec(codec_type, false);
++  }
++  return (hybris_codec_name.length() > 0);
++}
++
++HybrisDecoderImpl::HybrisDecoderImpl(VideoCodecType type) :
++                                     media_codec_(nullptr),
++                                     media_format_(nullptr),
++                                     output_format_(nullptr),
++                                     width_(0),
++                                     height_(0),
++                                     has_reported_init_(false),
++                                     has_reported_error_(false),
++                                     type_(type) {
++  static bool initialized = false;
++  if (!initialized) {
++    hybris_media_initialize();
++    initialized = true;
++  }
++}
++
++HybrisDecoderImpl::~HybrisDecoderImpl() {
++  Release();
++}
++
++int32_t HybrisDecoderImpl::InitDecode(const VideoCodec* codec_settings,
++                                      int32_t number_of_cores) {
++  ReportInit();
++
++  if (!codec_settings) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
++  }
++
++  if (codec_settings->codecType != kVideoCodecH264 &&
++      codec_settings->codecType != kVideoCodecVP8 &&
++      codec_settings->codecType != kVideoCodecVP9) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
++  }
++
++  // Release necessary in case of re-initializing.
++  int32_t ret = Release();
++  if (ret != WEBRTC_VIDEO_CODEC_OK) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return ret;
++  }
++  RTC_DCHECK(!media_codec_);
++
++  // Initialize hybris compat layer
++  const char* hybris_codec_type = MimeTypeForCodecType(codec_settings->codecType);
++  if (!hybris_codec_type) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  codec_type_ = std::string(hybris_codec_type);
++  LOG(LS_INFO) << "Requesting codec type " << codec_type_;
++
++  // Look for hardware-codecs first
++  std::string hybris_codec_name = FindSuitableCodec(codec_type_, true);
++  if (hybris_codec_name.length() == 0) {
++    hybris_codec_name = FindSuitableCodec(codec_type_, false);
++  }
++
++  if (hybris_codec_name.length() == 0) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  media_codec_ = media_codec_create_by_codec_name(hybris_codec_name.c_str());
++  if (!media_codec_) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  return WEBRTC_VIDEO_CODEC_OK;
++}
++
++std::string HybrisDecoderImpl::FindSuitableCodec(const std::string& codec_type, const bool hwCodecOnly) {
++  std::string hybris_codec_name;
++
++  // Find a decoder corresponding to our requested type
++  const size_t media_codec_num = media_codec_list_count_codecs();
++  for (size_t media_codec_pos = 0; media_codec_pos < media_codec_num; media_codec_pos++) {
++    media_codec_list_get_codec_info_at_id(media_codec_pos);
++
++    if (media_codec_list_is_encoder(media_codec_pos))
++      continue;
++
++    const char* codec_name_ptr = media_codec_list_get_codec_name(media_codec_pos);
++    if (!codec_name_ptr)
++      continue;
++
++    std::string codec_name(codec_name_ptr);
++
++    if (hwCodecOnly) {
++      if (codec_name.rfind("OMX.google.", 0) == 0)
++        continue;
++    }
++
++    LOG(LS_INFO) << "Inspecting codec: " << codec_name;
++
++    const size_t num_supported_types = media_codec_list_get_num_supported_types(media_codec_pos);
++    for (size_t supported_type_pos = 0; supported_type_pos < num_supported_types; supported_type_pos++) {
++      const size_t mime_len = media_codec_list_get_nth_supported_type_len(media_codec_pos, supported_type_pos);
++      if (mime_len == 0)
++        continue;
++
++      char* potential_mime = new char[mime_len + 1]();
++      media_codec_list_get_nth_supported_type(media_codec_pos, potential_mime, supported_type_pos);
++      if (!potential_mime)
++        continue;
++
++      potential_mime[mime_len] = '\0';
++      std::string potential_type(potential_mime);
++      LOG(LS_ERROR) << "Type: " << potential_type;
++
++      if (potential_type == codec_type) {
++        LOG(LS_INFO) << "Found codec for type " << potential_type << ", called " << codec_name;
++        hybris_codec_name = codec_name;
++        delete[] potential_mime;
++        break;
++      }
++
++      delete[] potential_mime;
++    }
++
++    if (hybris_codec_name.length() > 0)
++      break;
++  }
++
++  return hybris_codec_name;
++}
++
++int32_t HybrisDecoderImpl::Release() {
++  if (media_codec_) {
++    media_codec_stop(media_codec_);
++    media_codec_delegate_unref(media_codec_);
++    media_codec_ = nullptr;
++  }
++  if (media_format_) {
++    media_format_unref(media_format_);
++    media_format_destroy(media_format_);
++    media_format_ = nullptr;
++  }
++  if (output_format_) {
++    media_format_unref(output_format_);
++    media_format_destroy(output_format_);
++    output_format_ = nullptr;
++  }
++  return WEBRTC_VIDEO_CODEC_OK;
++}
++
++int32_t HybrisDecoderImpl::RegisterDecodeCompleteCallback(
++    DecodedImageCallback* callback) {
++  decoded_image_callback_ = callback;
++  return WEBRTC_VIDEO_CODEC_OK;
++}
++
++int32_t HybrisDecoderImpl::Reconfigure(size_t buf_size, int width, int height) {
++  const bool start = (!media_format_ || !output_format_);
++
++  if (media_format_)
++    media_format_unref(media_format_);
++
++  media_format_ = media_format_create_video_format(codec_type_.c_str(), width, height, 0, buf_size);
++  LOG(LS_INFO) << "Color format (in): " << media_format_get_color_format(media_format_);
++  int ret = media_codec_configure(media_codec_, media_format_, nullptr, 0);
++  if (ret < 0) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++  
++  if (output_format_)
++    media_format_unref(output_format_);
++  output_format_ = media_codec_get_output_format(media_codec_);
++  LOG(LS_INFO) << "Color format (out): " << media_format_get_color_format(output_format_);
++
++  if (start) {
++    ret = media_codec_start(media_codec_);
++    if (ret < 0) {
++      LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++      ReportError();
++      return WEBRTC_VIDEO_CODEC_ERROR;
++    }
++  }
++
++  width_ = width;
++  height_ = height;
++  return WEBRTC_VIDEO_CODEC_OK;
++}
++
++int32_t HybrisDecoderImpl::Decode(const EncodedImage& input_image,
++                                bool /*missing_frames*/,
++                                const RTPFragmentationHeader* /*fragmentation*/,
++                                const CodecSpecificInfo* codec_specific_info,
++                                int64_t render_time_ms) {
++  if (!IsInitialized()) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
++  }
++
++  if (!decoded_image_callback_) {
++    LOG(LS_WARNING) << "InitDecode() has been called, but a callback function "
++        "has not been set with RegisterDecodeCompleteCallback()";
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
++  }
++
++  if (!input_image._buffer || !input_image._length) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
++  }
++
++  if (codec_specific_info &&
++      (codec_specific_info->codecType != kVideoCodecH264 &&
++       codec_specific_info->codecType != kVideoCodecVP8 &&
++       codec_specific_info->codecType != kVideoCodecVP9)) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
++  }
++
++  if (width_ != input_image._encodedWidth || height_ != input_image._encodedHeight) {
++    int32_t ret = Reconfigure(input_image._size, input_image._encodedWidth, input_image._encodedHeight);
++    if (ret < 0) {
++      LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++      ReportError();
++      return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
++    }
++  }
++
++  n_buffers_in_ = media_codec_get_input_buffers_size(media_codec_);
++  LOG(LS_INFO) << "Number of input buffers:" << n_buffers_in_;
++
++  // Get a buffer to fill with frame data
++  size_t buf_index;
++  int ret = media_codec_dequeue_input_buffer(media_codec_, &buf_index, 100000);
++  if (ret < 0) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  uint8_t* input_ptr = media_codec_get_nth_input_buffer(media_codec_, buf_index);
++  if (!input_ptr) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  // Fill the input buffer
++  const size_t capacity = media_codec_get_nth_input_buffer_capacity(media_codec_, buf_index);
++  const size_t mem_size = std::min<size_t>(input_image._size, capacity);
++  LOG(LS_INFO) << "Capacity " << capacity << " vs mem_size " << mem_size;
++  memcpy(input_ptr, input_image._buffer, mem_size);
++
++  // Queue it into the encoder
++  MediaCodecBufferInfo buffer_info;
++  memset(&buffer_info, 0, sizeof(buffer_info));
++  buffer_info.index = buf_index;
++  buffer_info.size = mem_size;
++  buffer_info.presentation_time_us = render_time_ms * 1000;
++  ret = media_codec_queue_input_buffer(media_codec_, &buffer_info);
++
++  if (ret < 0) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  n_buffers_out_ = media_codec_get_output_buffers_size(media_codec_);
++  if (n_buffers_out_ == 0) {
++    LOG(LS_ERROR) << "No room for dequeuing output buffer";
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  // Get the decoded frame
++  MediaCodecBufferInfo buffer_info_out;
++  ret = media_codec_dequeue_output_buffer(media_codec_, &buffer_info_out, 100000);
++  if (ret < 0) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  uint8_t* out_buf = media_codec_get_nth_output_buffer(media_codec_, buffer_info_out.index);
++  //const size_t mem_size_out = media_codec_get_nth_output_buffer_capacity(media_codec_, buffer_info_out.index);
++
++  // Query properties suitable for the output buffer
++  const int width = media_format_get_width(output_format_);
++  const int height = media_format_get_height(output_format_);
++  const int crop_left = media_format_get_crop_left(output_format_);
++  const int crop_right = media_format_get_crop_right(output_format_);
++  const int crop_bottom = media_format_get_crop_bottom(output_format_);
++  const int crop_top = media_format_get_crop_top(output_format_);
++  const int src_stride = media_format_get_stride(output_format_);
++  const int out_slice_height = media_format_get_slice_height(output_format_);
++  const int color_format = media_format_get_color_format(output_format_);
++
++  int out_width = width;
++  if (crop_left) {
++    out_width -= (crop_left - 1);
++  }
++  if (crop_right) {
++    out_width -= (crop_right - 1);
++  }
++
++  int out_height = height;
++  if (crop_top) {
++    out_height -= (crop_top - 1);
++  }
++  if (crop_bottom) {
++    out_height -= (crop_bottom - 1);
++  }
++
++  // Create a suitable VideoFrameBuffer out of it, based on the output color format
++  rtc::scoped_refptr<webrtc::I420Buffer> buffer;
++  uint8_t* src = out_buf + buffer_info_out.offset;
++
++  if (color_format == COLOR_FormatYUV420PackedSemiPlanar) {
++    const uint8_t* y_plane_start = src;
++    const uint8_t* uv_plane_start = src + (src_stride * (out_slice_height - (crop_top / 2)));
++
++    buffer = webrtc::I420Buffer::Create(out_width, out_height);    
++    libyuv::NV12ToI420(y_plane_start, width,
++                       uv_plane_start, width,
++                       buffer->MutableDataY(), buffer->StrideY(),
++                       buffer->MutableDataU(), buffer->StrideU(),
++                       buffer->MutableDataV(), buffer->StrideV(),
++                       out_width, out_height);
++  } else if (color_format == COLOR_FormatYUV420SemiPlanar) {
++    const uint8_t* y_plane_start = out_buf + crop_left + (crop_top * src_stride);
++    const uint8_t* uv_plane_start = y_plane_start + (out_slice_height * src_stride);
++
++    buffer = webrtc::I420Buffer::Create(out_width, out_height);    
++    libyuv::NV12ToI420(y_plane_start, src_stride,
++                       uv_plane_start, src_stride,
++                       buffer->MutableDataY(), buffer->StrideY(),
++                       buffer->MutableDataU(), buffer->StrideU(),
++                       buffer->MutableDataV(), buffer->StrideV(),
++                       out_width, out_height);
++  } else /* if (color_format == COLOR_FormatYUV420Planar) */ {
++    const int skip_y_plane = (out_slice_height * src_stride);
++    const int skip_u_plane = (((out_slice_height + 1) / 2) * ((src_stride + 1) / 2));
++    const uint8_t* y_plane_start = src + crop_left + (crop_top * src_stride);
++    const uint8_t* u_plane_start = src + (crop_left / 2) + ((crop_top / 2) * src_stride) + skip_y_plane;
++    const uint8_t* v_plane_start = src + (crop_left / 2) + ((crop_top / 2) * src_stride) + skip_y_plane + skip_u_plane;
++
++    buffer = webrtc::I420Buffer::Copy(out_width, out_height,
++                                      y_plane_start, width,
++                                      u_plane_start, ((width + 1) / 2),
++                                      v_plane_start, ((width + 1) / 2));
++  }
++
++  rtc::Optional<uint8_t> qp;
++  if (type_ == kVideoCodecH264) {
++    h264_bitstream_parser_.ParseBitstream(input_image._buffer,
++                                          input_image._length);
++    int qp_int;
++    if (h264_bitstream_parser_.GetLastSliceQp(&qp_int)) {
++      qp.emplace(qp_int);
++    }
++  }
++
++  // Stuff VideoFrameBuffer into a VideoFrame
++  VideoFrame video_frame(
++      buffer, input_image._timeStamp, 0,
++      kVideoRotation_0);
++
++  // Return decoded frame.
++  decoded_image_callback_->Decoded(video_frame, rtc::Optional<int32_t>(),
++                                   qp);
++  // Release the output buffer
++  ret = media_codec_release_output_buffer(media_codec_, buffer_info_out.index, 0);
++  if (ret < 0) {
++    LOG(LS_ERROR) << "Error in " << __func__ << ":" << __LINE__;
++    ReportError();
++    return WEBRTC_VIDEO_CODEC_ERROR;
++  }
++
++  return WEBRTC_VIDEO_CODEC_OK;
++}
++
++const char* HybrisDecoderImpl::ImplementationName() const {
++  return "HybrisDecoder";
++}
++
++bool HybrisDecoderImpl::IsInitialized() const {
++  return media_codec_ != nullptr;
++}
++
++void HybrisDecoderImpl::ReportInit() {
++  if (has_reported_init_)
++    return;
++  RTC_HISTOGRAM_ENUMERATION("WebRTC.Video.HybrisDecoderImpl.Event",
++                            kHybrisDecoderEventInit,
++                            kHybrisDecoderEventMax);
++  has_reported_init_ = true;
++}
++
++void HybrisDecoderImpl::ReportError() {
++  if (has_reported_error_)
++    return;
++  RTC_HISTOGRAM_ENUMERATION("WebRTC.Video.HybrisDecoderImpl.Event",
++                            kHybrisDecoderEventError,
++                            kHybrisDecoderEventMax);
++  has_reported_error_ = true;
++}
++
++}  // namespace webrtc
+diff --git a/webrtc/modules/video_coding/codecs/hybris/hybris_decoder_impl.h b/webrtc/modules/video_coding/codecs/hybris/hybris_decoder_impl.h
+new file mode 100644
+index 0000000000..a6da5855e7
+--- /dev/null
++++ b/webrtc/modules/video_coding/codecs/hybris/hybris_decoder_impl.h
+@@ -0,0 +1,168 @@
++/*
++ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
++ *
++ *  Use of this source code is governed by a BSD-style license
++ *  that can be found in the LICENSE file in the root of the source
++ *  tree. An additional intellectual property rights grant can be found
++ *  in the file PATENTS.  All contributing project authors may
++ *  be found in the AUTHORS file in the root of the source tree.
++ *
++ */
++
++#ifndef WEBRTC_MODULES_VIDEO_CODING_CODECS_HYBRIS_HYBRIS_DECODER_IMPL_H_
++#define WEBRTC_MODULES_VIDEO_CODING_CODECS_HYBRIS_HYBRIS_DECODER_IMPL_H_
++
++#include "webrtc/api/video_codecs/video_decoder.h"
++#include "webrtc/modules/video_coding/include/video_codec_interface.h"
++#include "webrtc/common_video/h264/h264_bitstream_parser.h"
++
++#include <string>
++
++// Minimal set of media_codec_layer functions, since sysroot won't include hybris headers
++extern "C" {
++    // MediaFormat
++    typedef void* MediaFormat;
++
++    MediaFormat media_format_create_video_format(const char *mime, int32_t width, int32_t height, int64_t duration_us, int32_t max_input_size);
++
++    void media_format_destroy(MediaFormat format);
++    void media_format_ref(MediaFormat format);
++    void media_format_unref(MediaFormat format);
++
++    void media_format_set_byte_buffer(MediaFormat format, const char *key, uint8_t *data, size_t size);
++
++    const char* media_format_get_mime(MediaFormat format);
++    int64_t media_format_get_duration_us(MediaFormat format);
++    int32_t media_format_get_width(MediaFormat format);
++    int32_t media_format_get_height(MediaFormat format);
++    int32_t media_format_get_max_input_size(MediaFormat format);
++    int32_t media_format_get_stride(MediaFormat format);
++    int32_t media_format_get_slice_height(MediaFormat format);
++    int32_t media_format_get_color_format(MediaFormat format);
++    int32_t media_format_get_crop_left(MediaFormat format);
++    int32_t media_format_get_crop_right(MediaFormat format);
++    int32_t media_format_get_crop_top(MediaFormat format);
++    int32_t media_format_get_crop_bottom(MediaFormat format);
++
++
++    // SurfaceTextureClient
++    typedef void* SurfaceTextureClientHybris;
++
++    // MediaCodecList
++    ssize_t media_codec_list_find_codec_by_type(const char *type, bool encoder, size_t startIndex);
++    ssize_t media_codec_list_find_codec_by_name(const char *name);
++    size_t media_codec_list_count_codecs();
++    void media_codec_list_get_codec_info_at_id(size_t index);
++    const char *media_codec_list_get_codec_name(size_t index);
++    bool media_codec_list_is_encoder(size_t index);
++    size_t media_codec_list_get_num_supported_types(size_t index);
++    size_t media_codec_list_get_nth_supported_type_len(size_t index, size_t n);
++    int media_codec_list_get_nth_supported_type(size_t index, char *type, size_t n);
++
++    // MediaCodec
++    typedef void* MediaCodecDelegate;
++
++    MediaCodecDelegate media_codec_create_by_codec_name(const char *name);
++    MediaCodecDelegate media_codec_create_by_codec_type(const char *type);
++
++    void media_codec_delegate_destroy(MediaCodecDelegate delegate);
++    void media_codec_delegate_ref(MediaCodecDelegate delegate);
++    void media_codec_delegate_unref(MediaCodecDelegate delegate);
++
++    int media_codec_configure(MediaCodecDelegate delegate, MediaFormat format, SurfaceTextureClientHybris stc, uint32_t flags);
++    int media_codec_set_surface_texture_client(MediaCodecDelegate delegate, SurfaceTextureClientHybris stc);
++
++    int media_codec_queue_csd(MediaCodecDelegate delegate, MediaFormat format);
++    int media_codec_start(MediaCodecDelegate delegate);
++    int media_codec_stop(MediaCodecDelegate delegate);
++    int media_codec_release(MediaCodecDelegate delegate);
++    int media_codec_flush(MediaCodecDelegate delegate);
++
++    size_t media_codec_get_input_buffers_size(MediaCodecDelegate delegate);
++    uint8_t *media_codec_get_nth_input_buffer(MediaCodecDelegate delegate, size_t n);
++
++    size_t media_codec_get_nth_input_buffer_capacity(MediaCodecDelegate delegate, size_t n);
++    size_t media_codec_get_output_buffers_size(MediaCodecDelegate delegate);
++    uint8_t *media_codec_get_nth_output_buffer(MediaCodecDelegate delegate, size_t n);
++    size_t media_codec_get_nth_output_buffer_capacity(MediaCodecDelegate delegate, size_t n);
++
++    struct _MediaCodecBufferInfo
++    {
++        size_t index;
++        size_t offset;
++        size_t size;
++        int64_t presentation_time_us;
++        uint32_t flags;
++        uint8_t render_retries;
++    };
++    typedef struct _MediaCodecBufferInfo MediaCodecBufferInfo;
++
++    int media_codec_dequeue_output_buffer(MediaCodecDelegate delegate, MediaCodecBufferInfo *info, int64_t timeout_us);
++    int media_codec_queue_input_buffer(MediaCodecDelegate delegate, const MediaCodecBufferInfo *info);
++    int media_codec_dequeue_input_buffer(MediaCodecDelegate delegate, size_t *index, int64_t timeout_us);
++    int media_codec_release_output_buffer(MediaCodecDelegate delegate, size_t index, uint8_t render);
++
++    MediaFormat media_codec_get_output_format(MediaCodecDelegate delegate);
++
++    // media.c wrapper initialization
++    void hybris_media_initialize(void);
++}
++
++namespace webrtc {
++
++class HybrisDecoderImpl : public VideoDecoder {
++ public:
++  static bool IsSupported(VideoCodecType type);
++
++  HybrisDecoderImpl(VideoCodecType type);
++  ~HybrisDecoderImpl() override;
++
++  int32_t InitDecode(const VideoCodec* codec_settings,
++                     int32_t number_of_cores) override;
++  int32_t Release() override;
++
++  int32_t RegisterDecodeCompleteCallback(
++      DecodedImageCallback* callback) override;
++
++  // |missing_frames|, |fragmentation| and |render_time_ms| are ignored.
++  int32_t Decode(const EncodedImage& input_image,
++                 bool /*missing_frames*/,
++                 const RTPFragmentationHeader* /*fragmentation*/,
++                 const CodecSpecificInfo* codec_specific_info = nullptr,
++                 int64_t render_time_ms = -1) override;
++
++  const char* ImplementationName() const override;
++
++ private:
++  bool IsInitialized() const;
++
++  static std::string FindSuitableCodec(const std::string& codec_type, const bool hwCodecOnly);
++  int32_t Reconfigure(size_t buf_size, int width, int height);
++
++  // Reports statistics with histograms.
++  void ReportInit();
++  void ReportError();
++
++  MediaCodecDelegate media_codec_;
++  MediaFormat media_format_;
++  MediaFormat output_format_;
++  DecodedImageCallback* decoded_image_callback_;
++
++  size_t n_buffers_in_;
++  size_t n_buffers_out_;
++
++  uint32_t width_;
++  uint32_t height_;
++
++  bool has_reported_init_;
++  bool has_reported_error_;
++
++  std::string codec_type_;
++
++  VideoCodecType type_;
++  webrtc::H264BitstreamParser h264_bitstream_parser_;
++};
++
++}  // namespace webrtc
++
++#endif  // WEBRTC_MODULES_VIDEO_CODING_CODECS_HYBRIS_HYBRIS_DECODER_IMPL_H_
+diff --git a/webrtc/modules/video_coding/codecs/vp8/include/vp8.h b/webrtc/modules/video_coding/codecs/vp8/include/vp8.h
+index dd3514235d..3962ffa4d8 100644
+--- a/webrtc/modules/video_coding/codecs/vp8/include/vp8.h
++++ b/webrtc/modules/video_coding/codecs/vp8/include/vp8.h
+@@ -26,7 +26,7 @@ class VP8Encoder : public VideoEncoder {
+ 
+ class VP8Decoder : public VideoDecoder {
+  public:
+-  static VP8Decoder* Create();
++  static VideoDecoder* Create();
+ 
+   virtual ~VP8Decoder() {}
+ };  // end of VP8Decoder class
+diff --git a/webrtc/modules/video_coding/codecs/vp8/vp8_impl.cc b/webrtc/modules/video_coding/codecs/vp8/vp8_impl.cc
+index d45abcd1b6..65a901e598 100644
+--- a/webrtc/modules/video_coding/codecs/vp8/vp8_impl.cc
++++ b/webrtc/modules/video_coding/codecs/vp8/vp8_impl.cc
+@@ -36,6 +36,8 @@
+ #include "webrtc/system_wrappers/include/field_trial.h"
+ #include "webrtc/system_wrappers/include/metrics.h"
+ 
++#include "webrtc/modules/video_coding/codecs/hybris/hybris_decoder_impl.h"
++
+ namespace webrtc {
+ namespace {
+ 
+@@ -128,7 +130,11 @@ VP8Encoder* VP8Encoder::Create() {
+   return new VP8EncoderImpl();
+ }
+ 
+-VP8Decoder* VP8Decoder::Create() {
++VideoDecoder* VP8Decoder::Create() {
++#if defined(WEBRTC_USE_HYBRIS)
++  if (HybrisDecoderImpl::IsSupported(kVideoCodecVP8))
++    return new HybrisDecoderImpl(kVideoCodecVP8);
++#endif
+   return new VP8DecoderImpl();
+ }
+ 
+diff --git a/webrtc/modules/video_coding/codecs/vp9/include/vp9.h b/webrtc/modules/video_coding/codecs/vp9/include/vp9.h
+index 3b726a0cc5..042aed0ae8 100644
+--- a/webrtc/modules/video_coding/codecs/vp9/include/vp9.h
++++ b/webrtc/modules/video_coding/codecs/vp9/include/vp9.h
+@@ -27,7 +27,7 @@ class VP9Encoder : public VideoEncoder {
+ class VP9Decoder : public VideoDecoder {
+  public:
+   static bool IsSupported();
+-  static VP9Decoder* Create();
++  static VideoDecoder* Create();
+ 
+   virtual ~VP9Decoder() {}
+ };
+diff --git a/webrtc/modules/video_coding/codecs/vp9/vp9_impl.cc b/webrtc/modules/video_coding/codecs/vp9/vp9_impl.cc
+index 65d1a155d5..f736deb4d2 100644
+--- a/webrtc/modules/video_coding/codecs/vp9/vp9_impl.cc
++++ b/webrtc/modules/video_coding/codecs/vp9/vp9_impl.cc
+@@ -32,6 +32,8 @@
+ #include "webrtc/modules/include/module_common_types.h"
+ #include "webrtc/modules/video_coding/codecs/vp9/screenshare_layers.h"
+ 
++#include "webrtc/modules/video_coding/codecs/hybris/hybris_decoder_impl.h"
++
+ namespace webrtc {
+ 
+ // Only positive speeds, range for real-time coding currently is: 5 - 8.
+@@ -838,7 +840,11 @@ bool VP9Decoder::IsSupported() {
+   return true;
+ }
+ 
+-VP9Decoder* VP9Decoder::Create() {
++VideoDecoder* VP9Decoder::Create() {
++#if defined(WEBRTC_USE_HYBRIS)
++  if (HybrisDecoderImpl::IsSupported(kVideoCodecVP9))
++    return new HybrisDecoderImpl(kVideoCodecVP9);
++#endif
+   return new VP9DecoderImpl();
+ }
+ 
+diff --git a/webrtc/video/BUILD.gn b/webrtc/video/BUILD.gn
+index 19d0e93b66..88253ca344 100644
+--- a/webrtc/video/BUILD.gn
++++ b/webrtc/video/BUILD.gn
+@@ -291,5 +291,8 @@ if (rtc_include_tests) {
+     if (rtc_use_h264) {
+       defines += [ "WEBRTC_USE_H264" ]
+     }
++    if (rtc_use_hybris) {
++      defines += [ "WEBRTC_USE_HYBRIS" ]
++    }
+   }
+ }
+diff --git a/webrtc/webrtc.gni b/webrtc/webrtc.gni
+index d4acaf5268..b0fb783e13 100644
+--- a/webrtc/webrtc.gni
++++ b/webrtc/webrtc.gni
+@@ -138,7 +138,10 @@ declare_args() {
+   # also: |rtc_initialize_ffmpeg|.
+   # CHECK THE OPENH264, FFMPEG AND H.264 LICENSES/PATENTS BEFORE BUILDING.
+   # http://www.openh264.org, https://www.ffmpeg.org/
+-  rtc_use_h264 = proprietary_codecs && !is_android && !is_ios
++  rtc_use_h264 = true # proprietary_codecs && !is_android && !is_ios
++
++  # Build with support for hybris video codecs
++  rtc_use_hybris = true
+ 
+   # Determines whether QUIC code will be built.
+   rtc_use_quic = false
